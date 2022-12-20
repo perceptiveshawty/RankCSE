@@ -1,0 +1,6 @@
+/.venv
+/SentEval
+/data
+/result
+/run_rankcse.slurm
+/runs
