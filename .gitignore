@@ -1,5 +1,6 @@
 /.venv
-/SentEval
+/SentEval/data/downstream/*
+!/SentEval/data/downstream/download_dataset.sh
 /data
 /result
 /run_rankcse.slurm
