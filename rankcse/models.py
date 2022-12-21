@@ -70,9 +70,8 @@ class ListNet(nn.Module):
         self.student_temp_scaled_sim = Similarity(tau)
         self.gamma_ = gamma_
 
-    def forward(self, z1T, z2T, z1, z2):
+    def forward(self, teacher_top1_sim_pred, z1, z2):
         student_top1_sim_pred = self.student_temp_scaled_sim(z1.unsqueeze(1), z2.unsqueeze(0))
-        teacher_top1_sim_pred = self.teacher_temp_scaled_sim(z1T.unsqueeze(1), z2T.unsqueeze(0))
 
         p = F.log_softmax(student_top1_sim_pred.fill_diagonal_(float('-inf')), dim=-1)
         q = F.softmax(teacher_top1_sim_pred.fill_diagonal_(float('-inf')), dim=-1)
@@ -89,12 +88,11 @@ class ListMLE(nn.Module):
         self.gamma_ = gamma_ 
         self.eps = 1e-7
 
-    def forward(self, z1T, z2T, z1, z2):
+    def forward(self, teacher_top1_sim_pred, z1, z2):
         student_top1_sim_pred = self.temp_scaled_sim(z1.unsqueeze(1), z2.unsqueeze(0))
-        teacher_top1_sim_pred = self.temp_scaled_sim(z1T.unsqueeze(1), z2T.unsqueeze(0))
 
-        y_pred = student_top1_sim_pred
-        y_true = teacher_top1_sim_pred
+        y_pred = student_top1_sim_pred # .fill_diagonal_(float('-inf')).softmax(dim=-1)
+        y_true = teacher_top1_sim_pred # .fill_diagonal_(float('-inf')).softmax(dim=-1)
 
         # shuffle for randomised tie resolution
         random_indices = torch.randperm(y_pred.shape[-1])
@@ -102,16 +100,17 @@ class ListMLE(nn.Module):
         y_true_shuffled = y_true[:, random_indices]
 
         y_true_sorted, indices = y_true_shuffled.sort(descending=True, dim=-1)
-        mask = y_true_sorted == -float('inf')
+        mask = y_true_sorted == -1
         preds_sorted_by_true = torch.gather(y_pred_shuffled, dim=1, index=indices)
-        preds_sorted_by_true[mask] = -float('inf')
+        preds_sorted_by_true[mask] = float('-inf')
         max_pred_values, _ = preds_sorted_by_true.max(dim=1, keepdim=True)
         preds_sorted_by_true_minus_max = preds_sorted_by_true - max_pred_values
         cumsums = torch.cumsum(preds_sorted_by_true_minus_max.exp().flip(dims=[1]), dim=1).flip(dims=[1])
         observation_loss = torch.log(cumsums + self.eps) - preds_sorted_by_true_minus_max
         observation_loss[mask] = 0.0
 
-        return self.gamma_ * torch.mean(torch.sum(observation_loss, dim=1))
+        return self.gamma_ * torch.mean(torch.mean(observation_loss, dim=1))
+
 
 class Pooler(nn.Module):
     """
@@ -176,8 +175,7 @@ def cl_forward(cls,
     return_dict=None,
     mlm_input_ids=None,
     mlm_labels=None,
-    teacher_z1=None,
-    teacher_z2=None,
+    teacher_top1_sim_pred=None,
 ):
     return_dict = return_dict if return_dict is not None else cls.config.use_return_dict
     ori_input_ids = input_ids
@@ -283,10 +281,10 @@ def cl_forward(cls,
 
     # RankCSE - knowledge distillation loss 
     distillation_loss_fct = (ListNet(cls.model_args.tau2, cls.model_args.gamma_) if cls.model_args.distillation_loss == "listnet" else ListMLE(cls.model_args.tau2, cls.model_args.gamma_))
-    kd_loss = distillation_loss_fct(teacher_z1.to(cls.device), teacher_z2.to(cls.device), z1, z2)
+    kd_loss = distillation_loss_fct(teacher_top1_sim_pred.to(cls.device), z1, z2)
 
     # RankCSE - self-distillation loss
-    z1_z2_cos = cos_sim
+    z1_z2_cos = cos_sim.clone()
     z2_z1_cos = cls.sim(z2.unsqueeze(1), z1.unsqueeze(0))
     sd_loss = cls.div(z1_z2_cos.softmax(dim=-1).clamp(min=1e-7), z2_z1_cos.softmax(dim=-1).clamp(min=1e-7))
 
@@ -381,8 +379,7 @@ class BertForCL(BertPreTrainedModel):
         sent_emb=False,
         mlm_input_ids=None,
         mlm_labels=None,
-        teacher_z1=None,
-        teacher_z2=None,
+        teacher_top1_sim_pred=None,
     ):
         if sent_emb:
             return sentemb_forward(self, self.bert,
@@ -411,8 +408,7 @@ class BertForCL(BertPreTrainedModel):
                 return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels,
-                teacher_z1=teacher_z1,
-                teacher_z2=teacher_z2,
+                teacher_top1_sim_pred=teacher_top1_sim_pred,
             )
 
 
@@ -444,8 +440,7 @@ class RobertaForCL(RobertaPreTrainedModel):
         sent_emb=False,
         mlm_input_ids=None,
         mlm_labels=None,
-        teacher_z1=None,
-        teacher_z2=None,
+        teacher_top1_sim_pred=None,
     ):
         if sent_emb:
             return sentemb_forward(self, self.roberta,
@@ -474,6 +469,5 @@ class RobertaForCL(RobertaPreTrainedModel):
                 return_dict=return_dict,
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels,
-                teacher_z1=teacher_z1,
-                teacher_z2=teacher_z2,
+                teacher_top1_sim_pred=teacher_top1_sim_pred,
             )

@@ -469,7 +469,7 @@ class CLTrainer(Trainer):
                 if (step + 1) % self.args.gradient_accumulation_steps == 0:
                     self.control = self.callback_handler.on_step_begin(self.args, self.state, self.control)
 
-                # RankCSE - pass the embeddings obtained by the teacher in inputs['z1'] and inputs['z2']
+                # RankCSE - pass the similarity lists obtained by the teacher in inputs['teacher_top1_sim_pred']
                 with torch.no_grad():
                     
                     # Read batch inputs
@@ -494,21 +494,40 @@ class CLTrainer(Trainer):
                     teacher_inputs["token_type_ids"] = token_type_ids
 
                     # Encode, unflatten, and pass to student
-                    if teacher is not None:
+                    if teacher is not None: 
+                        # Single teacher
                         embeddings = teacher.encode(teacher_inputs)
                         embeddings = embeddings.view((batch_size, num_sent, -1))
+                        z1T, z2T = embeddings[:,0], embeddings[:,1]
+                        
+                        if self.args.fp16:
+                            z1T = z1T.to(torch.float16)
+                            z2T = z2T.to(torch.float16)
+                        
+                        cos = nn.CosineSimilarity(dim=-1)
+                        teacher_top1_sim_pred = cos(z1T.unsqueeze(1), z2T.unsqueeze(0)) / self.args.tau2
+
                     else:
+                        # Weighted average of two teachers
                         embeddings1 = first_teacher.encode(teacher_inputs)
                         embeddings2 = second_teacher.encode(teacher_inputs)
                         embeddings1 = embeddings1.view((batch_size, num_sent, -1))
                         embeddings2 = embeddings2.view((batch_size, num_sent, -1))
+                        first_teacher_z1, first_teacher_z2 = embeddings1[:,0], embeddings1[:,1]
+                        second_teacher_z1, second_teacher_z2 = embeddings2[:,0], embeddings2[:,1]
 
-                        embeddings = (self.args.alpha_ * embeddings1) + ((1.0 - self.args.alpha_) * embeddings2)
-                        embeddings = embeddings.to(torch.float16)
-                        # embeddings = torch.cat((embeddings1, embeddings2), dim=-1).to(torch.float16)
+                        if self.args.fp16:
+                            first_teacher_z1 = first_teacher_z1.to(torch.float16)
+                            first_teacher_z2 = first_teacher_z2.to(torch.float16)
+                            second_teacher_z1 = second_teacher_z1.to(torch.float16)
+                            second_teacher_z2 = second_teacher_z2.to(torch.float16)
 
-                    inputs["teacher_z1"] = embeddings[:,0]
-                    inputs["teacher_z2"] = embeddings[:,1]
+                        cos = nn.CosineSimilarity(dim=-1)
+                        first_teacher_top1_sim = cos(first_teacher_z1.unsqueeze(1), first_teacher_z2.unsqueeze(0)) / self.args.tau2
+                        second_teacher_top1_sim = cos(second_teacher_z1.unsqueeze(1), second_teacher_z2.unsqueeze(0)) / self.args.tau2
+                        teacher_top1_sim_pred = (self.args.alpha_ * first_teacher_top1_sim) + ((1.0 - self.args.alpha_) * second_teacher_top1_sim)
+
+                    inputs["teacher_top1_sim_pred"] = teacher_top1_sim_pred
 
 
                 if ((step + 1) % self.args.gradient_accumulation_steps != 0) and self.args.local_rank != -1:

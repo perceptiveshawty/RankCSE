@@ -579,6 +579,7 @@ def main():
 
     training_args.first_teacher_name_or_path = model_args.first_teacher_name_or_path
     training_args.second_teacher_name_or_path = model_args.second_teacher_name_or_path
+    training_args.tau2 = model_args.tau2
     training_args.alpha_ = model_args.alpha_
 
     trainer = CLTrainer(
