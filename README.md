@@ -116,8 +116,6 @@ Coming soon!
 
 ## Citations
 
-[![DOI](https://img.shields.io/badge/DOI-10.48550/arXiv.2204.10298-green?color=FF8000?color=009922)](https://doi.org/10.48550/arXiv.2204.10298)
-
 Please cite RankCSE and SimCSE if you use this repository or find it useful in some way. If you are the anonymous authors of the ICLR submission, feel free to contact me
 at sach.chanchani [at] gmail.com about any concerns, or updating the citations. 
 
