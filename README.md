@@ -5,7 +5,7 @@
 [![ICLR](https://img.shields.io/badge/ICLR%20Submission-Under%20Review-blueviolet)](https://openreview.net/forum?id=y_sZyxuuFh3)
 
 This is a community implementation of RankCSE, released to facilitate research. I am not the anonymous author(s), and have no connection to them.
-This code is based largely on [SimCSE](https://github.com/princeton-nlp/SimCSE). I plan to release trained RankCSE model checkpoints in the next few weeks.
+This code is based largely on [SimCSE](https://github.com/princeton-nlp/SimCSE). I plan to release trained RankCSE model checkpoints in the next few weeks. 
 
 ## Overview
 ![RankCSE](rankcse.png)
@@ -53,7 +53,7 @@ bash download_dataset.sh
 python train.py \
     --model_name_or_path bert-base-uncased \
     --train_file data/wiki1m_for_simcse.txt \
-    --output_dir runs/scratch-listmle-bert-base-uncased \
+    --output_dir runs/my-rankcse-listmle-bert-base-uncased \
     --num_train_epochs 1 \
     --per_device_train_batch_size 128 \
     --learning_rate 3e-5 \
