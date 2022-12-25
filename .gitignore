@@ -1,6 +1,9 @@
 /.venv
+/.bigvenv
 /SentEval/data/downstream/*
 /data
 /result
 /run_rankcse.slurm
 /runs
+/experiments
+/experiment0.*

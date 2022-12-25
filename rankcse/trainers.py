@@ -406,12 +406,12 @@ class CLTrainer(Trainer):
         # RankCSE - Initialize the teacher
         teacher = None
         if self.args.second_teacher_name_or_path is None:
-            teacher_pooler = ("cls" if ("simcse" in self.args.first_teacher_name_or_path or "diffcse" in self.args.first_teacher_name_or_path) else "avg")
+            teacher_pooler = ("cls_before_pooler" if ("simcse" in self.args.first_teacher_name_or_path or "diffcse" in self.args.first_teacher_name_or_path) else "avg")
             teacher = Teacher(model_name_or_path=self.args.first_teacher_name_or_path, pooler=teacher_pooler)
         else:
-            first_pooler = ("cls" if ("simcse" in self.args.first_teacher_name_or_path or "diffcse" in self.args.first_teacher_name_or_path) else "avg")
+            first_pooler = ("cls_before_pooler" if ("simcse" in self.args.first_teacher_name_or_path or "diffcse" in self.args.first_teacher_name_or_path) else "avg")
             first_teacher = Teacher(model_name_or_path=self.args.first_teacher_name_or_path, pooler=first_pooler)
-            second_pooler = ("cls" if ("simcse" in self.args.second_teacher_name_or_path or "diffcse" in self.args.second_teacher_name_or_path) else "avg")
+            second_pooler = ("cls_before_pooler" if ("simcse" in self.args.second_teacher_name_or_path or "diffcse" in self.args.second_teacher_name_or_path) else "avg")
             second_teacher = Teacher(model_name_or_path=self.args.second_teacher_name_or_path, pooler=second_pooler)
 
         # Update the references
