@@ -1,6 +1,5 @@
 # RankCSE: Unsupervised Sentence Representation Learning via Learning to Rank
 
-[![Version](https://img.shields.io/badge/Version-v0.1.0-blue?color=FF8000?color=009922)](https://img.shields.io/badge/Version-v0.1.0-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](https://opensource.org/licenses/MIT)
 
 This is a community implementation of RankCSE, released to facilitate research. I am not affiliated with the authors. The repo is based largely on [SimCSE](https://github.com/princeton-nlp/SimCSE).
