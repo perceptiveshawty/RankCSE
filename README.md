@@ -2,7 +2,6 @@
 
 [![Version](https://img.shields.io/badge/Version-v0.1.0-blue?color=FF8000?color=009922)](https://img.shields.io/badge/Version-v0.1.0-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](https://opensource.org/licenses/MIT)
-[![ICLR](https://img.shields.io/badge/ICLR%20Submission-Under%20Review-blueviolet)](https://openreview.net/forum?id=y_sZyxuuFh3)
 
 This is a community implementation of RankCSE, released to facilitate research. I am not the anonymous author(s), and have no connection to them.
 This code is based largely on [SimCSE](https://github.com/princeton-nlp/SimCSE). I plan to release trained RankCSE model checkpoints in the next few weeks. 
@@ -96,8 +95,7 @@ Arguments from [SimCSE](https://github.com/princeton-nlp/SimCSE):
 
 ## Evaluation
 
-
-We will provide a simple colab notebook to evaluate results in the near future. For now, you can run the commands below for evaluation after using the repo to train a model:
+You can run the commands below for evaluation after using the repo to train a model:
 
 ```bash
 python evaluation.py \
@@ -112,7 +110,13 @@ For more detailed information, please check [SimCSE's GitHub repo](https://githu
 
 ## Pretrained models
 
-Coming soon!
+[![Hugging Face Models](https://img.shields.io/badge/%F0%9F%A4%97-Models-yellow)](https://huggingface.co/perceptiveshawty)
+
+* RankCSE-ListMLE-BERT-base (reproduced): https://huggingface.co/perceptiveshawty/rankcse-listmle-bert-base-uncased
+* RankCSE-ListNet-BERT-base (reproduced): https://huggingface.co/perceptiveshawty/rankcse-listnet-bert-base-uncased
+
+We can load the models using the API provided by [SimCSE](https://github.com/princeton-nlp/SimCSE). 
+See [Getting Started](https://github.com/princeton-nlp/SimCSE#getting-started) for more information.
 
 ## Citations
 
@@ -120,15 +124,22 @@ Please cite RankCSE and SimCSE if you use this repository or find it useful in s
 at sach.chanchani [at] gmail.com about any concerns, or updating the citations. 
 
 ```bibtex
-@inproceedings{
-    anonymous2023rankcse,
-    title={Rank{CSE}: Unsupervised Sentence Representations Learning via Learning to Rank},
-    author={Anonymous},
-    booktitle={Submitted to The Eleventh International Conference on Learning Representations },
-    year={2023},
-    url={https://openreview.net/forum?id=y_sZyxuuFh3},
-    note={under review}
+@inproceedings{liu2023rankcse,
+    title = {{R}ank{CSE}: Unsupervised Sentence Representations Learning via Learning to Rank},
+    author = {Liu, Jiduan  and
+      Liu, Jiahao  and
+      Wang, Qifan  and
+      Wang, Jingang  and
+      Wu, Wei  and
+      Xian, Yunsen  and
+      Zhao, Dongyan  and
+      Chen, Kai  and
+      Yan, Rui},
+    booktitle = {Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+    year = {2023},
+    publisher = {Association for Computational Linguistics},
 }
+
 
 @inproceedings{gao2021simcse,
    title={{SimCSE}: Simple Contrastive Learning of Sentence Embeddings},
