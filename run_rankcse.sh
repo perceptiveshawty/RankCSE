@@ -8,7 +8,7 @@ TRANSFORMERS_OFFLINE=1 \
 HF_DATASETS_OFFLINE=1 \
 python train.py \
     --model_name_or_path bert-base-uncased \
-    --train_file data/wiki1m_for_simcse.txt \
+    --train_file SentEval/data/downstream/wiki1m_for_simcse.txt \
     --output_dir runs/scratch-listmle-bert-base-uncased \
     --num_train_epochs 1 \
     --per_device_train_batch_size 128 \
